@@ -5,7 +5,8 @@
   "author": "Stephan Max <stephan.max@gmail.com>",
   "scripts": {
     "start": "webpack-dev-server --port 5401 --progress",
-    "build": "webpack"
+    "build": "webpack",
+    "deploy": "npm run build && surge dist"
   },
   "license": "MIT",
   "devDependencies": {

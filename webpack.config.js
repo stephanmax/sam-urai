@@ -37,6 +37,9 @@ module.exports = {
     new CopyWebpackPlugin([{
       from: path.join(PATHS.SRC, 'assets'),
       to: path.join(PATHS.DIST, 'assets')
+    }, {
+      from: 'CNAME',
+      to: path.join(PATHS.DIST)
     }], {})    
   ],
   module: {
