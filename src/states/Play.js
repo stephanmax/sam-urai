@@ -1,12 +1,8 @@
 import Phaser from 'phaser'
 
 export default class extends Phaser.State {
-  init() {
-    
-  }
-
   create () {
-    var bmd = game.add.bitmapData(game.width, game.height * .3)
+    const bmd = game.add.bitmapData(game.width, game.height * .3)
     bmd.ctx.beginPath()
     bmd.ctx.rect(0, 0, game.width, game.height * .3)
     bmd.ctx.fillStyle = '#c88fe4'
@@ -15,9 +11,12 @@ export default class extends Phaser.State {
     this.ground = game.add.sprite(0, game.height * .7, bmd)
     
     game.physics.enable(this.ground, Phaser.Physics.ARCADE)
-    this.ground.body.immovable = true    
+    this.ground.body.immovable = true
 
-    this.samurai = game.add.sprite(game.width * .1, game.height * .7 - 58, 'samurai')
+    const scaleFactor = (game.width * .2) / 80
+
+    this.samurai = game.add.sprite(game.width * .1, game.height * .7 - (scaleFactor * 58), 'samurai')
+    this.samurai.scale.setTo(scaleFactor, scaleFactor)
     this.samurai.smoothed = false
 
     this.jumping = false
@@ -29,7 +28,7 @@ export default class extends Phaser.State {
     this.samurai.animations.add('doublejump', [16, 14], 10)
 
     game.physics.enable(this.samurai, Phaser.Physics.ARCADE)
-    this.samurai.body.gravity.y = 500
+    this.samurai.body.gravity.y = game.height * 1.7
     this.samurai.body.setSize(50, 50, 0, 0)
 
     this.attackBtn = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
@@ -63,6 +62,8 @@ export default class extends Phaser.State {
     if (this.samurai.body.velocity.y > 0) {
       this.samurai.frame = 15
     }
+
+    document.getElementById('fps').innerHTML = game.time.fps
   }
 
   attack() {
@@ -89,11 +90,7 @@ export default class extends Phaser.State {
       this.canAttack = false
     }
     this.jumping = true
-    this.samurai.body.velocity.y = -250
+    this.samurai.body.velocity.y = -game.height * .9
     this.samurai.animations.stop()
-  }
-
-  render() {
-    game.debug.text(game.time.fps, game.width-25, 15, '#00ff00')
   }
 }

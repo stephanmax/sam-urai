@@ -7,7 +7,6 @@ export default class extends Phaser.State {
 
   create () {
     game.time.advancedTiming = true
-    game.debug.renderShadow = false
 
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL
     game.stage.backgroundColor = '#fefefe'

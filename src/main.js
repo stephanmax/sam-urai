@@ -9,7 +9,7 @@ import End from './states/End'
 
 class MyGame extends Phaser.Game {
   constructor () {
-    super(400, 300, Phaser.CANVAS)
+    super(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio, Phaser.CANVAS)
 
     this.state.add('Boot', Boot, false)
     this.state.add('Play', Play, false)
