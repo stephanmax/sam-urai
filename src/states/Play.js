@@ -9,14 +9,14 @@ export default class extends Phaser.State {
     const width = this.ground.length === 0 ? game.width * 2 : game.width * game.rnd.realInRange(.3, .7)
     const gap = this.ground.length === 0 ? 0 : game.width * game.rnd.realInRange(.2, .4)
     this.totalGroundWidth += gap
-    const height = game.height * game.rnd.realInRange(.2, .4)
+    const height = game.height * game.rnd.realInRange(.3, .5)
     const bmd = game.add.bitmapData(width, height)
     bmd.ctx.beginPath()
     bmd.ctx.rect(0, 0, width, height)
     bmd.ctx.fillStyle = game.rnd.pick(['#2ecc71', '#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#e74c3c', '#95a5a6', '#34495e', '#1abc9c'])
     bmd.ctx.fill()
 
-    const ground = this.ground.create(this.totalGroundWidth, game.height - height, bmd)
+    const ground = this.ground.create(this.totalGroundWidth, game.height - height + .1 * height, bmd)
     this.totalGroundWidth += width
     ground.body.velocity.x = -game.width * .5
     ground.body.immovable = true
@@ -37,12 +37,9 @@ export default class extends Phaser.State {
     this.ground.enableBody = true
     this.ground.physicsBodyType = Phaser.Physics.ARCADE
 
-    this.ground
-
     const scaleFactor = (game.width * .2) / 80
 
     this.samurai = game.add.sprite(game.width * .1, game.height * .2, 'samurai')
-    console.log(this.samurai.x)
     this.samurai.scale.setTo(scaleFactor, scaleFactor)
     this.samurai.smoothed = false
 
@@ -57,7 +54,7 @@ export default class extends Phaser.State {
 
     game.physics.enable(this.samurai, Phaser.Physics.ARCADE)
     this.samurai.body.gravity.y = game.height * 2
-    this.samurai.body.setSize(50, 50, 0, 0)
+    this.samurai.body.setSize(42, 50, 0, 0)
 
     this.attackBtn = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
     this.attackBtn.onDown.add(this.attack, this)
@@ -73,8 +70,6 @@ export default class extends Phaser.State {
         this.attack()
       }
     }, this)
-
-    this.samurai.animations.play('run')
   }
 
   update() {
@@ -88,11 +83,7 @@ export default class extends Phaser.State {
       }
 
       if (this.samurai.body.velocity.y !== 0) {
-        this.dead = true
-        this.samurai.frame = 18
-        game.input.onTap.removeAll()
-        game.input.keyboard.stop()
-        game.paused = true
+        this.lose()
       }
 
       if (this.jumping && !this.dead) {
@@ -111,7 +102,6 @@ export default class extends Phaser.State {
 
     if (this.samurai.y > game.height) {
       this.dead = true
-      game.paused = true
     }
 
     document.getElementById('fps').innerHTML = game.time.fps
@@ -144,5 +134,28 @@ export default class extends Phaser.State {
     this.samurai.body.velocity.y = -game.height * .7
     this.samurai.body.velocity.x = 0
     this.samurai.animations.stop()
+  }
+
+  lose() {
+    this.dead = true
+
+    game.input.onTap.removeAll()
+    game.input.keyboard.stop()
+
+    this.ground.forEach((ground) => {
+      ground.body.velocity.x = 0
+      ground.body.enable = false
+    })
+
+    this.samurai.body.velocity.x = game.width * -.25
+    this.samurai.body.velocity.y = game.height * -.25
+    this.samurai.animations.stop()
+    this.samurai.frame = 18
+    
+    game.camera.shake(.05, 500)
+  }
+
+  render() {
+    // game.debug.body(this.samurai)
   }
 }
