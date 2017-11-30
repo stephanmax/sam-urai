@@ -47,9 +47,21 @@ export default class extends Phaser.State {
   makeFireball() {
     const fireball = this.fireballs.getFirstExists(false)
     if (fireball && !this.dead) {
-      fireball.scale.setTo(this.scaleFactor, this.scaleFactor)
-      fireball.reset(game.width, this.fireballSpawnY)
-      fireball.body.velocity.x = this.VELOCITY_X * game.rnd.realInRange(1.2, 1.5)
+      console.log(2 - this.game.time.totalElapsedSeconds() / 100)
+      if (game.rnd.realInRange(0, Math.max(.6, 1.6 - this.game.time.totalElapsedSeconds() / 100)) < .3) {
+        fireball.scale.setTo(this.scaleFactor * 1.2, this.scaleFactor * 1.2)
+        fireball.reset(game.width, this.fireballSpawnY + fireball.height)
+        fireball.body.velocity.x = this.VELOCITY_X * game.rnd.realInRange(1, 1.2)
+        fireball.tint = 0xff6666
+        fireball.__notouching = true
+      }
+      else {
+        fireball.scale.setTo(this.scaleFactor, this.scaleFactor)
+        fireball.reset(game.width, this.fireballSpawnY)
+        fireball.body.velocity.x = this.VELOCITY_X * game.rnd.realInRange(1.2, 1.5)
+        fireball.tint = 0xffffff
+        fireball.__notouching = false
+      }
       fireball.checkWorldBounds = true
       fireball.events.onOutOfBounds.add((fireball) => {
         if (fireball.x < 0 || (fireball.x > game.width && fireball.__hit)) {
@@ -118,20 +130,27 @@ export default class extends Phaser.State {
         this.samurai.body.velocity.x = this.VELOCITY_X * -1.05
         this.samurai.animations.play('run')
         this.jumps = 0
+        this.samurai.body.gravity.y = game.height * 2
+        if (this.samurai.__jumpAttack) {
+          this.samurai.__jumpAttack = false
+          game.camera.shake(.02, 200)
+        }
       }
     })
 
     game.physics.arcade.overlap(this.samurai, this.fireballs, (samurai, fireball) => {
-      if (this.attacking && !fireball.__hit) {
-        fireball.body.velocity.x *= -2
-        fireball.scale.x *= -1
-        fireball.__hit = true
-      }
-      if (!this.attacking && !fireball.__hit) {
+      if ((!this.attacking && !fireball.__hit) || (this.attacking && !fireball.__hit && fireball.__notouching)) {
         fireball.visible = false
         const explosion = game.add.sprite(fireball.x, fireball.y + fireball.height * .5, 'explosion')
         explosion.anchor.setTo(.5, .5)
-        explosion.scale.setTo(this.scaleFactor, this.scaleFactor)
+        if (fireball.__notouching) {
+          explosion.scale.setTo(this.scaleFactor * 1.2, this.scaleFactor * 1.2)
+          explosion.tint = 0xff6666
+        }
+        else {
+          explosion.scale.setTo(this.scaleFactor, this.scaleFactor)
+          explosion.tint = 0xffffff
+        }
         const explode = explosion.animations.add('explode')
         explode.play(30)
         explode.onComplete.add(() => {
@@ -139,11 +158,16 @@ export default class extends Phaser.State {
         })
         this.lose()
       }
+      if (this.attacking && !fireball.__hit) {
+        fireball.body.velocity.x *= -2
+        fireball.scale.x *= -1
+        fireball.__hit = true
+        this.timer.delay -= this.game.time.totalElapsedSeconds()
+      }
     })
 
     if (this.samurai.body.velocity.y > 0 && !this.dead) {
       if (this.samurai.animations.currentAnim.name != 'attack') {
-        console.log('YEAH')
         this.samurai.frame = 15
       }
       this.samurai.body.velocity.x = 0
@@ -154,10 +178,6 @@ export default class extends Phaser.State {
     }
 
     document.getElementById('fps').innerHTML = game.time.fps
-
-    if (this.timer.delay > 500) {
-      this.timer.delay -= Math.log10(this.game.time.totalElapsedSeconds())
-    }
   }
 
   attack() {
@@ -169,6 +189,10 @@ export default class extends Phaser.State {
       this.attacking = false
       this.samurai.animations.play('run')
     })
+    if (this.jumps > 0) {
+      this.samurai.body.gravity.y = game.height * 24
+      this.samurai.__jumpAttack = true
+    }
   }
 
   jump() {
