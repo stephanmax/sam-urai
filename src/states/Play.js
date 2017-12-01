@@ -11,10 +11,15 @@ export default class extends Phaser.State {
     this.dead = false
 
     this.fireballSpawnY = game.height * .3
+
+    this.timers = []
+    this.level = 1
+
+    this.score = 0
   }
 
   makeGround() {
-    const width = this.ground.length === 0 ? game.width * 2 : game.width * game.rnd.pick([.2, .4, .6, 1, 1.2, 1.4])
+    const width = this.ground.length === 0 ? game.width * 2 : game.width * game.rnd.pick([.2, .4, .6, .6, 1, 1, 1, 1.2, 1.2, 1.4])
     const gap = this.ground.length === 0 ? 0 : game.width * game.rnd.pick([.1, .2, .3])
     this.totalGroundWidth += gap
     const height = this.ground.length === 0 ? game.height * .3 : game.height * game.rnd.pick([.3, .35, .4, .45])
@@ -47,21 +52,18 @@ export default class extends Phaser.State {
   makeFireball() {
     const fireball = this.fireballs.getFirstExists(false)
     if (fireball && !this.dead) {
-      console.log(2 - this.game.time.totalElapsedSeconds() / 100)
+      fireball.reset(game.width, game.height * game.rnd.pick([.55, .45, .4, .35, .3, .25]))
       if (game.rnd.realInRange(0, Math.max(.6, 1.6 - this.game.time.totalElapsedSeconds() / 100)) < .3) {
         fireball.scale.setTo(this.scaleFactor * 1.2, this.scaleFactor * 1.2)
-        fireball.reset(game.width, this.fireballSpawnY + fireball.height)
-        fireball.body.velocity.x = this.VELOCITY_X * game.rnd.realInRange(1, 1.2)
         fireball.tint = 0xff6666
         fireball.__notouching = true
       }
       else {
         fireball.scale.setTo(this.scaleFactor, this.scaleFactor)
-        fireball.reset(game.width, this.fireballSpawnY)
-        fireball.body.velocity.x = this.VELOCITY_X * game.rnd.realInRange(1.2, 1.5)
         fireball.tint = 0xffffff
         fireball.__notouching = false
       }
+      fireball.body.velocity.x = this.VELOCITY_X * game.rnd.realInRange(1.2, 1.5)
       fireball.checkWorldBounds = true
       fireball.events.onOutOfBounds.add((fireball) => {
         if (fireball.x < 0 || (fireball.x > game.width && fireball.__hit)) {
@@ -100,7 +102,16 @@ export default class extends Phaser.State {
     this.jumpBtn = game.input.keyboard.addKey(Phaser.Keyboard.UP)
     this.jumpBtn.onDown.add(this.jump, this)
 
-    game.input.onTap.add(() => {
+    const textStyle = {
+      font: '10vw -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+      fille: '#333',
+      align: 'center'
+    }
+
+    this.scoreText = game.add.text(game.world.centerX, game.height * .1, this.score, textStyle)
+    this.scoreText.anchor.set(.5)
+
+    game.input.onDown.add(() => {
       if (game.input.x <= game.width / 2) {
         this.jump()
       }
@@ -109,10 +120,15 @@ export default class extends Phaser.State {
       }
     }, this)
 
-    this.timer = game.time.events.loop(Phaser.Timer.SECOND * 3, this.makeFireball, this)
+    this.startTime = game.time.now
+    this.timers.push(game.time.events.loop(Phaser.Timer.SECOND * 3, this.makeFireball, this))
   }
 
   update() {
+    if (game.time.now - this.startTime > this.level * 30 * Phaser.Timer.SECOND) {
+      this.level++
+      this.timers.push(game.time.events.loop(Phaser.Timer.SECOND * game.rnd.realInRange(1, 2), this.makeFireball, this))
+    }
     if (this.ground.length < 5) {
       this.makeGround()
     }
@@ -162,7 +178,8 @@ export default class extends Phaser.State {
         fireball.body.velocity.x *= -2
         fireball.scale.x *= -1
         fireball.__hit = true
-        this.timer.delay -= this.game.time.totalElapsedSeconds()
+        this.score++
+        this.scoreText.text = this.score
       }
     })
 
@@ -174,10 +191,12 @@ export default class extends Phaser.State {
     }
 
     if (this.samurai.y > game.height) {
-      this.dead = true
+      game.state.start('End', true, false, this.score)
     }
 
-    document.getElementById('fps').innerHTML = game.time.fps
+    if (process.env.NODE_ENV === 'development') {
+      document.getElementById('fps').innerHTML = game.time.fps
+    }
   }
 
   attack() {
@@ -233,6 +252,8 @@ export default class extends Phaser.State {
   }
 
   render() {
-    // game.debug.body(this.samurai)
+    if (process.env.NODE_ENV === 'development') {
+      game.debug.body(this.samurai)
+    }
   }
 }

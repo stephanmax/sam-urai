@@ -15,6 +15,13 @@ export default class extends Phaser.State {
 
     game.physics.startSystem(Phaser.Physics.ARCADE)
 
-    game.state.start('Play')
+    game.__highscore = localStorage.getItem('__highscore')
+
+    if (game.__highscore === null) {
+      localStorage.setItem('__highscore', 0)
+      game.__highScore = 0
+    }
+
+    game.state.start('Title')
   }
 }

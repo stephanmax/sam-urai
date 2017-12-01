@@ -12,6 +12,7 @@ class MyGame extends Phaser.Game {
     super(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio, Phaser.CANVAS)
 
     this.state.add('Boot', Boot, false)
+    this.state.add('Title', Title, false)
     this.state.add('Play', Play, false)
     this.state.add('End', End, false)
 
