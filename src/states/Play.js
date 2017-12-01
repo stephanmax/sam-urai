@@ -52,7 +52,7 @@ export default class extends Phaser.State {
   makeFireball() {
     const fireball = this.fireballs.getFirstExists(false)
     if (fireball && !this.dead) {
-      fireball.reset(game.width, game.height * game.rnd.pick([.55, .45, .4, .35, .3, .25]))
+      fireball.reset(game.width, game.height * game.rnd.pick([.7, .65, .6, .55, .5, .45]))
       if (game.rnd.realInRange(0, Math.max(.6, 1.6 - this.game.time.totalElapsedSeconds() / 100)) < .3) {
         fireball.scale.setTo(this.scaleFactor * 1.2, this.scaleFactor * 1.2)
         fireball.tint = 0xff6666
