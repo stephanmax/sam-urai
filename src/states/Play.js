@@ -52,8 +52,8 @@ export default class extends Phaser.State {
   makeFireball() {
     const fireball = this.fireballs.getFirstExists(false)
     if (fireball && !this.dead) {
-      fireball.reset(game.width, game.height * game.rnd.pick([.7, .65, .6, .55, .5, .45]))
-      if (game.rnd.realInRange(0, Math.max(.6, 1.6 - this.game.time.totalElapsedSeconds() / 100)) < .3) {
+      fireball.reset(game.width, game.rnd.realInRange(this.fireballSpawnY - game.height * .3, this.fireballSpawnY))
+      if (game.rnd.realInRange(0, 1) < .15) {
         fireball.scale.setTo(this.scaleFactor * 1.2, this.scaleFactor * 1.2)
         fireball.tint = 0xff6666
         fireball.__notouching = true
@@ -150,6 +150,8 @@ export default class extends Phaser.State {
         if (this.samurai.__jumpAttack) {
           this.samurai.__jumpAttack = false
           game.camera.shake(.02, 200)
+          this.samurai.body.setSize(22, 36, 20, 14)
+          this.attacking = false
         }
       }
     })
@@ -207,9 +209,11 @@ export default class extends Phaser.State {
     this.samurai.body.setSize(70, 45, 0, 5)
     this.samurai.animations.play('attack')
     this.samurai.animations.currentAnim.onComplete.add(() => {
-      this.samurai.body.setSize(22, 36, 20, 14)
-      this.attacking = false
-      this.samurai.animations.play('run')
+      if (this.jumps === 0) {
+        this.samurai.body.setSize(22, 36, 20, 14)
+        this.attacking = false
+        this.samurai.animations.play('run')
+      }
     })
     if (this.jumps > 0) {
       this.samurai.body.gravity.y = game.height * 24
@@ -255,8 +259,6 @@ export default class extends Phaser.State {
   }
 
   render() {
-    if (process.env.NODE_ENV === 'development') {
-      game.debug.body(this.samurai)
-    }
+    // game.debug.body(this.samurai)
   }
 }
