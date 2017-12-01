@@ -200,6 +200,9 @@ export default class extends Phaser.State {
   }
 
   attack() {
+    if (this.dead) {
+      return
+    }
     this.attacking = true
     this.samurai.body.setSize(70, 45, 0, 5)
     this.samurai.animations.play('attack')
@@ -215,6 +218,9 @@ export default class extends Phaser.State {
   }
 
   jump() {
+    if (this.dead) {
+      return
+    }
     if (this.jumps > 1) {
       return
     }
@@ -234,9 +240,6 @@ export default class extends Phaser.State {
 
   lose() {
     this.dead = true
-
-    game.input.onTap.removeAll()
-    game.input.keyboard.stop()
 
     this.ground.forEach((ground) => {
       ground.body.velocity.x = 0
