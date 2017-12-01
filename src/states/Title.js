@@ -20,7 +20,7 @@ export default class extends Phaser.State {
       align: 'center'
     }
 
-    const title = game.add.text(game.world.centerX, game.world.centerY * .5, 'Throwback', textStyle)
+    const title = game.add.text(game.world.centerX, game.world.centerY * .5, 'Sam-urai', textStyle)
     title.anchor.set(.5)
 
     textStyle.font = '8vw -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
